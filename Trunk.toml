@@ -1,0 +1,4 @@
+[[hooks]]
+stage = "post_build"
+command = "sh"
+command_arguments = ["-c", "find dist -type f -regex '.*\\.(css|js|html|svg|json)' -exec gzip -9 -k {} \\;"]
