@@ -54,4 +54,4 @@ Visit `http://localhost:3000` in your browser to use the application.
 
 ## License
 
-MIT License
+AGPL-3.0 license
