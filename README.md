@@ -2,6 +2,7 @@
 
 A simple, privacy-focused web application to search and filter GitHub issues and pull requests across multiple repositories.
 
+
 ## Features
 
 - Search across multiple GitHub repositories simultaneously
