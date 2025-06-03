@@ -22,7 +22,6 @@ pub fn InputQueryBy(
                     }
                     on:keydown=move |event: ev::KeyboardEvent| {
                         if event.key() == "Enter" && !event_target_value(&event).is_empty() {
-                            // Trigger action based on url_to_go
                         }
                     }
                     prop:value=move || value_get.get()
