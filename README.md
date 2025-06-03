@@ -6,7 +6,7 @@ A simple, privacy-focused web application to search and filter GitHub issues and
 ## Features
 
 - Search across multiple GitHub repositories simultaneously
-- Filter by issue/PR text, author, label, and assignee
+- Filter by issue/PR text, location, author, label, assignee, and state
 - Switch easily between issues and pull requests
 - Privacy guaranteed - all processing happens in your browser
 - No data is stored or sent to any server
@@ -18,12 +18,25 @@ A simple, privacy-focused web application to search and filter GitHub issues and
 2. **Choose issues or PRs** using the toggle buttons
 3. **Enter your search criteria** in the filter fields:
    - General text search
+   - Search in location (title, body, or comments)
    - Author name
    - Label
    - Assignee
+   - State (open, closed, merged, or draft for PRs)
 4. **Click "GO"** to search GitHub with your parameters
 
 The app builds the appropriate GitHub search URL with your filters and opens it in a new tab, taking you directly to GitHub's search results.
+
+## Filters Available
+
+- **Text Search**: Search for any text across issues/PRs
+- **Search In**: Specify where to search - title, body, or comments
+- **Author**: Filter by the username who created the issue/PR
+- **Label**: Filter by specific labels
+- **Assignee**: Filter by who the issue/PR is assigned to
+- **State**: Filter by current state
+  - For issues: Open, Closed
+  - For pull requests: Open, Closed, Merged, Draft
 
 ## Privacy
 
