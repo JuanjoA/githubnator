@@ -1,10 +1,11 @@
-use leptos::*;
+use leptos::{html::Button, *};
+use leptos::prelude::*;
 use web_sys::MouseEvent;
 use uuid::Uuid;
 use crate::models::{GlobalState, RepositoryButton, get_default_repositories, get_default_url_repository, get_default_url_model};
 use gloo_storage::Storage;
-use logging::log;
-use html::Button;
+use log::error;
+use leptos_dom::helpers::event_target_value;
 
 
 
@@ -20,24 +21,23 @@ where
     let state = expect_context::<RwSignal<GlobalState>>();
     let storage = gloo_storage::LocalStorage::raw();
     let data_localstorage = storage.get("repositories");
-    let textarea_data_from_cache: String = match data_localstorage {
+    let mut textarea_data_from_cache: String = match data_localstorage {
         Ok(value) => match value {
             Some(val) => val,
             None => get_default_repositories(),
         },
         Err(e) => {
-            log!("> Error: {:?}", e);
+            error!("> Error: {:?}", e);
             String::new()
         }
     };
 
-    let (textarea_data, textarea_data_set) = create_signal(textarea_data_from_cache.clone());
-
     //
     // Making the buttons
     //
+    let textarea_data_from_cache_clone = textarea_data_from_cache.clone();
     let buttons = move || {
-        textarea_data()
+        textarea_data_from_cache_clone
             .trim()
             .split("\n")
             .into_iter()
@@ -47,17 +47,18 @@ where
                 state.update(|state| {
                     state.buttons.insert(repo_name.clone(), false);
                 });
-                create_rw_signal(RepositoryButton::new(Uuid::new_v4(), repo_name, false))
+                RwSignal::new(RepositoryButton::new(Uuid::new_v4(), repo_name, false))
             })
             .collect::<Vec<_>>()
     };
-    create_effect(move |_| {
+    Effect::new(move |_| {
         let _value = clear_action.get();
-        let actual_textarea = textarea_data();
-        textarea_data_set(actual_textarea);
+        let actual_textarea = textarea_data_from_cache.clone();
+        textarea_data_from_cache = actual_textarea;
         
     });
-    let (is_hidden, is_hidden_set) = create_signal(true);
+    let (is_hidden, is_hidden_set) = signal(true);
+    let (textarea_data, textarea_data_set) = signal("".to_string());
 
     view! {
         <div class="columns is-centered has-text-centered px-2 py-2">
@@ -68,7 +69,7 @@ where
                 <button
                     class="button is-primary is-outlined mr-1"
                     on:click=move |_| {
-                        is_hidden_set(!is_hidden());
+                        is_hidden_set.set(!is_hidden.get());
                     }
                     aria-label="Clear all filters and repositories"
                     name="clear-button"
@@ -83,8 +84,8 @@ where
                 <button
                     class="button is-primary is-outlined"
                     disabled=move || {
-                        repo_get().contains(get_default_url_repository().as_str())
-                            & state().model.contains(get_default_url_model().as_str())
+                        repo_get.get().contains(get_default_url_repository().as_str())
+                            & state.get().model.contains(get_default_url_model().as_str())
                     }
                     on:click=on_click
                     aria-label="Open configuration settings"
@@ -108,13 +109,13 @@ where
             cols="33"
             placeholder="One repo by line, only path (exclude domain). Unfocus to update."
             class="textarea is-primary is-small"
-            class:is-hidden=move || is_hidden()
+            class:is-hidden=move || is_hidden.get()
             on:change=move |ev| {
-                textarea_data_set(event_target_value(&ev));
+                textarea_data_set.set(event_target_value(&ev));
                 let _ = storage.set("repositories", &event_target_value(&ev));
             }
             on:blur=move |_| {
-                is_hidden_set(true);
+                is_hidden_set.set(true);
             }
         >
             {textarea_data}
@@ -130,7 +131,7 @@ where
                 buttons()
                     .into_iter()
                     .map(|rb| {
-                        let noderef: NodeRef<Button> = create_node_ref();
+                        let noderef: NodeRef<Button> = NodeRef::new();
                         view! {
                             <div class="column is-3 has-text-centered">
                                 <button node_ref=noderef

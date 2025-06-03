@@ -8,11 +8,14 @@ edition = "2021"
 [dependencies]
 gloo-storage = "0.3.0"
 gloo-timers = { version = "0.2", features = ["futures" ]}
-leptos = { version = "0.6.5", features = ["csr", "nightly"] }
+leptos = { version = "0.8", features = ["csr"] }
 #leptos-use = "0.10.10"
+web-sys = { version = "0.3", features = ["MouseEvent", "KeyboardEvent", "Event", "EventTarget", "HtmlInputElement", "Window", "Storage"] }
 console_error_panic_hook = "0.1"
 console_log = "1"
 log = "0.4"
+wasm-bindgen = "0.2"
+leptos_dom = { version = "0.8" }
 
 [dependencies.uuid]
 version = "1.10.0"
@@ -20,4 +23,5 @@ features = [
     "v4",                # Lets you generate random UUIDs
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+    "js",                # Add JS feature for WASM
 ]

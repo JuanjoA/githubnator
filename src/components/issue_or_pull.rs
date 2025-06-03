@@ -1,5 +1,5 @@
 use leptos::*;
-
+use leptos::prelude::*;
 #[component]
 pub fn IssueOrPull() -> impl IntoView {
     let state = expect_context::<RwSignal<crate::GlobalState>>();
@@ -15,9 +15,9 @@ pub fn IssueOrPull() -> impl IntoView {
             <div class="column is-narrow has-text-centered">
                 <button
                     class="button is-primary is-outlined"
-                    class:is-active=move || issueorpull() == "issues".to_string()
-                    class:is-focused=move || issueorpull() == "issues".to_string()
-                    on:click=move |_| issueorpull_set("issues".to_string())
+                    class:is-active=move || issueorpull.get() == "issues".to_string()
+                    class:is-focused=move || issueorpull.get() == "issues".to_string()
+                    on:click=move |_| issueorpull_set.set("issues".to_string())
                 >
                     issues
                 </button>
@@ -25,9 +25,9 @@ pub fn IssueOrPull() -> impl IntoView {
             <div class="column is-narrow has-text-centered">
                 <button
                     class="button is-primary is-outlined"
-                    class:is-active=move || issueorpull() == "pulls".to_string()
-                    class:is-focused=move || issueorpull() == "pulls".to_string()
-                    on:click=move |_| issueorpull_set("pulls".to_string())
+                    class:is-active=move || issueorpull.get() == "pulls".to_string()
+                    class:is-focused=move || issueorpull.get() == "pulls".to_string()
+                    on:click=move |_| issueorpull_set.set("pulls".to_string())
                 >
                     pulls
                 </button>
