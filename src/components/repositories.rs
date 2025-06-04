@@ -21,28 +21,30 @@ where
     let state = expect_context::<RwSignal<GlobalState>>();
     let storage = gloo_storage::LocalStorage::raw();
     let data_localstorage = storage.get("repositories");
-    let mut textarea_data_from_cache: String = match data_localstorage {
+    let initial_data: String = match data_localstorage {
         Ok(value) => match value {
             Some(val) => val,
             None => get_default_repositories(),
         },
         Err(e) => {
             error!("> Error: {:?}", e);
-            String::new()
+            get_default_repositories()
         }
     };
+
+    let (is_hidden, is_hidden_set) = signal(true);
+    let (textarea_data, textarea_data_set) = signal(initial_data);
 
     //
     // Making the buttons
     //
-    let textarea_data_from_cache_clone = textarea_data_from_cache.clone();
     let buttons = move || {
-        textarea_data_from_cache_clone
+        textarea_data.get()
             .trim()
             .split("\n")
             .into_iter()
             .map(|repo_name| repo_name.to_string())
-            .filter(|repo_name| repo_name != "")
+            .filter(|repo_name| !repo_name.is_empty())
             .map(|repo_name| {
                 state.update(|state| {
                     state.buttons.insert(repo_name.clone(), false);
@@ -51,14 +53,15 @@ where
             })
             .collect::<Vec<_>>()
     };
+
     Effect::new(move |_| {
         let _value = clear_action.get();
-        let actual_textarea = textarea_data_from_cache.clone();
-        textarea_data_from_cache = actual_textarea;
-        
+        // Recargar los repositorios por defecto cuando se limpian los filtros
+        textarea_data_set.set(get_default_repositories());
+        state.update(|state| {
+            state.buttons.clear();
+        });
     });
-    let (is_hidden, is_hidden_set) = signal(true);
-    let (textarea_data, textarea_data_set) = signal("".to_string());
 
     view! {
         <div class="columns is-centered has-text-centered px-2 py-2">
@@ -103,23 +106,29 @@ where
         <div class="mx-2">
             <div class="field">
             <textarea
-            id="repo_text"
-            name="repositories"
-            rows="7"
-            cols="33"
-            placeholder="One repo by line, only path (exclude domain). Unfocus to update."
-            class="textarea is-primary is-small"
-            class:is-hidden=move || is_hidden.get()
-            on:change=move |ev| {
-                textarea_data_set.set(event_target_value(&ev));
-                let _ = storage.set("repositories", &event_target_value(&ev));
-            }
-            on:blur=move |_| {
-                is_hidden_set.set(true);
-            }
-        >
-            {textarea_data}
-        </textarea>      
+                id="repo_text"
+                name="repositories"
+                rows="7"
+                cols="33"
+                placeholder="One repo by line, only path (exclude domain). Unfocus to update."
+                class="textarea is-primary is-small"
+                class:is-hidden=move || is_hidden.get()
+                on:input=move |ev| {
+                    let value = event_target_value(&ev);
+                    textarea_data_set.set(value.clone());
+                }
+                on:change=move |ev| {
+                    let value = event_target_value(&ev);
+                    let _ = storage.set("repositories", &value);
+                    state.update(|state| {
+                        state.buttons.clear();
+                    });
+                }
+                on:blur=move |_| {
+                    is_hidden_set.set(true);
+                }
+                prop:value=move || textarea_data.get()
+            />
             </div>
         </div>
         
