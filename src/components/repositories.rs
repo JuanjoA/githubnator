@@ -35,10 +35,7 @@ where
     let (is_hidden, is_hidden_set) = signal(true);
     let (textarea_data, textarea_data_set) = signal(initial_data);
 
-    //
-    // Making the buttons
-    //
-    let buttons = move || {
+        let buttons = Memo::new(move |_| {
         textarea_data.get()
             .trim()
             .split("\n")
@@ -46,20 +43,20 @@ where
             .map(|repo_name| repo_name.to_string())
             .filter(|repo_name| !repo_name.is_empty())
             .map(|repo_name| {
-                state.update(|state| {
-                    state.buttons.insert(repo_name.clone(), false);
-                });
-                RwSignal::new(RepositoryButton::new(Uuid::new_v4(), repo_name, false))
+                let is_active = state.get().buttons.get(&repo_name).copied().unwrap_or(false);
+                RwSignal::new(RepositoryButton::new(Uuid::new_v4(), repo_name, is_active))
             })
             .collect::<Vec<_>>()
-    };
+    });
 
     Effect::new(move |_| {
         let _value = clear_action.get();
-        // Recargar los repositorios por defecto cuando se limpian los filtros
-        textarea_data_set.set(get_default_repositories());
+        
         state.update(|state| {
-            state.buttons.clear();
+            // Desactivar todos los botones sin eliminarlos
+            for (_, active) in state.buttons.iter_mut() {
+                *active = false;
+            }
         });
     });
 
@@ -137,7 +134,7 @@ where
         //
         <div class="columns is-centered buttons mt-2 px-2 py-2">
             {move || {
-                buttons()
+                buttons.get()
                     .into_iter()
                     .map(|rb| {
                         let noderef: NodeRef<Button> = NodeRef::new();
